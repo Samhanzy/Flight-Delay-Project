@@ -1,5 +1,10 @@
 # ✈️ Flight Delay Analysis: Classification & Clustering
 
+![R Version](https://img.shields.io/badge/R-≥4.0-blue)
+![License](https://img.shields.io/github/license/Samhanzy/Flight-Delay-Project)
+![Last Commit](https://img.shields.io/github/last-commit/Samhanzy/Flight-Delay-Project)
+
+
 ## 🔍 Overview
 
 This project analyzes flight delay data using classification and clustering techniques. It builds predictive models to identify delayed flights and uses unsupervised learning to discover patterns in flight behavior.
