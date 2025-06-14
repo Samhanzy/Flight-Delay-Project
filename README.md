@@ -54,9 +54,9 @@ Run the script to train models and generate visualizations.
 View outputs including ROC curves, feature importance, and clustering results.
 
 📎 Full Report
-📄 Download the full DOCX report
+📄 [Download the full DOCX report](reports/Flight-Prediction-Report.docx)
 
-📄 View the PDF version
+📄 [View the PDF version](reports/Flight-Prediction-Report.pdf)
 
 📜 License
 This project is licensed under the MIT License. See the LICENSE file for details.
