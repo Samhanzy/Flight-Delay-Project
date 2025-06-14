@@ -28,6 +28,21 @@ This project analyzes flight delay data using classification and clustering tech
 ### 🧪 Sample Predictions
 Manually simulated flights demonstrate model behavior across conditions (e.g., clear vs stormy weather). The model responds logically — predicting higher delay chances during storms and long durations.
 
+## 📊 Visualizations
+
+### ROC Curve
+![ROC Curve](figures/roc_curve.png)
+
+### Random Forest: Feature Importance
+![Random Forest](figures/rf_feature_importance.png)
+
+### XGBoost: Feature Importance
+![XGBoost](figures/xgb_feature_importance.png)
+
+### K-Means Clustering
+![K-Means Clustering](figures/kmeans_clusters.png)
+
+
 ---
 
 ## 📊 Clustering Analysis
