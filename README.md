@@ -1,68 +1,66 @@
-# Flight Delay Analysis: Classification & Clustering
+# ✈️ Flight Delay Analysis: Classification & Clustering
 
-## Overview
+## 🔍 Overview
 
-This project analyzes flight delay data using classification and clustering techniques. The main objectives are:
+This project analyzes flight delay data using classification and clustering techniques. It builds predictive models to identify delayed flights and uses unsupervised learning to discover patterns in flight behavior.
 
-- To build predictive models that determine whether a flight will be delayed based on selected features.
-- To explore patterns in flight characteristics using clustering methods.
+---
 
-## Key Features
+## 🧠 Classification Pipeline
 
-- Classification models: Penalized Logistic Regression, Random Forest, and XGBoost
-- Predictors used: `Flight_Duration`, `Day_of_Week`, and `Weather_Conditions`
-- One-hot encoding and normalization of predictors
-- Data balancing with SMOTE to handle class imbalance
-- Model evaluation using ROC curves, AUC, and confusion matrices
-- Feature importance plots for tree-based models
-- K-Means clustering on `Flight_Duration` and `Day_of_Week` with automatic optimal K detection
-- Clean and interpretable visualizations
+### Models Used:
+- Penalized Logistic Regression
+- Random Forest
+- XGBoost
 
-## Data
+### Features:
+- `Flight_Duration`, `Day_of_Week`, `Weather_Conditions`
+- One-hot encoding + normalization
+- Class balancing via SMOTE
+- ROC curves, AUC, confusion matrices for evaluation
+- Feature importance plots
 
-The dataset used is `flights_200.csv`, which contains 200 flight records with information such as duration, airline, scheduled departure, and delay status.
+### 🧪 Sample Predictions
+Manually simulated flights demonstrate model behavior across conditions (e.g., clear vs stormy weather). The model responds logically — predicting higher delay chances during storms and long durations.
 
-## Requirements
+---
+
+## 📊 Clustering Analysis
+
+K-Means clustering on `Flight_Duration` and `Day_of_Week` with automatic `k` selection using the elbow method. Clusters reveal natural flight behavior groupings.
+
+---
+
+## 📂 Data
+
+The dataset `flights_200.csv` contains 200 flight records with information such as duration, airline, scheduled departure, and delay status.
+
+---
+
+## 🧰 Requirements
 
 - R (version ≥ 4.0)
 - Required packages:
 
 ```r
 install.packages(c("tidymodels", "tidyverse", "xgboost", "ranger", "themis", "vip", "doParallel"))
-How to Run
-Open the R project or script.
+🚀 How to Run
+Open the R script or R project.
 
-Ensure the flights_200.csv file is in your working directory.
+Ensure flights_200.csv is in your working directory.
 
-Run the R script to execute both the classification and clustering pipelines.
+Run the script to train models and generate visualizations.
 
-View ROC curves, feature importance plots, and clustering results.
+View outputs including ROC curves, feature importance, and clustering results.
 
-Examine sample predictions from the logistic regression model.
+📎 Full Report
+📄 Download the full DOCX report
 
-Sample Predictions Using Logistic Regression
-To demonstrate the model's functionality, five realistic flights were manually constructed and passed into the logistic regression model:
+📄 View the PDF version
 
-Sample Input Data
-Flight_Duration	Day_of_Week	Weather_Conditions
-85	1 (Monday)	Clear
-180	3 (Wednesday)	Rain
-145	5 (Friday)	Fog
-220	7 (Sunday)	Storm
-110	2 (Tuesday)	Snow
-
-Model Predictions
-.pred_0	.pred_1	Predicted Class	Flight_Duration	Day_of_Week	Weather_Conditions
-0.72	0.28	0 (No Delay)	85	1	Clear
-0.45	0.55	1 (Delay)	180	3	Rain
-0.51	0.49	0 (No Delay)	145	5	Fog
-0.38	0.62	1 (Delay)	220	7	Storm
-0.60	0.40	0 (No Delay)	110	2	Snow
-
-The model reacts reasonably to different conditions, such as predicting a delay for a long flight in stormy weather on a Sunday.
-
-License
+📜 License
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-Author
+👤 Author
 Oklogo Samuel
+GitHub: @Samhanzy
