@@ -30,6 +30,8 @@ Manually simulated flights demonstrate model behavior across conditions (e.g., c
 
 ## 📊 Visualizations
 
+## 📊 Visualizations
+
 ### ROC Curve
 ![ROC Curve](figures/roc_curve.png)
 
@@ -41,6 +43,7 @@ Manually simulated flights demonstrate model behavior across conditions (e.g., c
 
 ### K-Means Clustering
 ![K-Means Clustering](figures/kmeans_clusters.png)
+
 
 
 ---
