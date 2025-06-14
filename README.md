@@ -28,7 +28,6 @@ This project analyzes flight delay data using classification and clustering tech
 ### 🧪 Sample Predictions
 Manually simulated flights demonstrate model behavior across conditions (e.g., clear vs stormy weather). The model responds logically — predicting higher delay chances during storms and long durations.
 
-## 📊 Visualizations
 
 ## 📊 Visualizations
 
