@@ -1,0 +1,170 @@
+run_classification_pipeline <- function(data, target, positive_class, smote = TRUE, seed = 123, parallel = TRUE) {
+  library(tidymodels)
+  library(themis)
+  library(vip)
+  library(doParallel)
+  
+  set.seed(seed)
+  
+  if (parallel) {
+    cl <- makePSOCKcluster(parallel::detectCores())
+    registerDoParallel(cl)
+  } else {
+    registerDoSEQ()
+  }
+  
+  data[[target]] <- as.factor(data[[target]])
+  lvls <- levels(data[[target]])
+  new_lvls <- c(setdiff(lvls, positive_class), positive_class)
+  data[[target]] <- factor(data[[target]], levels = new_lvls)
+  
+  data <- data %>% select(all_of(c(target, "Flight_Duration", "Day_of_Week", "Weather_Conditions")))
+  
+  split <- initial_split(data, prop = 0.8, strata = !!sym(target))
+  train_data <- training(split)
+  test_data <- testing(split)
+  
+  rec <- recipe(as.formula(paste(target, "~ Flight_Duration + Day_of_Week + Weather_Conditions")), data = train_data) %>%
+    step_novel(all_nominal_predictors()) %>%
+    step_dummy(all_nominal_predictors()) %>%
+    step_zv(all_predictors()) %>%
+    step_normalize(all_numeric_predictors())
+  
+  if (smote) {
+    rec <- rec %>% step_smote(all_outcomes())
+  }
+  
+  model_log <- logistic_reg(penalty = 0.01, mixture = 1) %>%
+    set_engine("glmnet") %>%
+    set_mode("classification")
+  
+  model_rf <- rand_forest(trees = 500) %>%
+    set_engine("ranger", importance = "impurity") %>%
+    set_mode("classification")
+  
+  model_xgb <- boost_tree(trees = 500, learn_rate = 0.1, tree_depth = 6) %>%
+    set_engine("xgboost") %>%
+    set_mode("classification")
+  
+  wf_log <- workflow() %>% add_model(model_log) %>% add_recipe(rec)
+  wf_rf <- workflow() %>% add_model(model_rf) %>% add_recipe(rec)
+  wf_xgb <- workflow() %>% add_model(model_xgb) %>% add_recipe(rec)
+  
+  fit_log <- fit(wf_log, train_data)
+  fit_rf <- fit(wf_rf, train_data)
+  fit_xgb <- fit(wf_xgb, train_data)
+  
+  evaluate_model <- function(fit, model_name) {
+    preds <- predict(fit, test_data, type = "prob") %>%
+      bind_cols(predict(fit, test_data)) %>%
+      bind_cols(test_data)
+    
+    pred_col <- paste0(".pred_", positive_class)
+    auc <- roc_auc(preds, truth = !!sym(target), !!sym(pred_col)) %>%
+      mutate(model = model_name)
+    
+    conf <- conf_mat(preds, truth = !!sym(target), estimate = .pred_class)
+    
+    roc <- roc_curve(preds, truth = !!sym(target), !!sym(pred_col)) %>%
+      mutate(model = model_name)
+    
+    list(auc = auc, conf_mat = conf, preds = preds, roc = roc)
+  }
+  
+  eval_log <- evaluate_model(fit_log, "Penalized Logistic Regression")
+  eval_rf <- evaluate_model(fit_rf, "Random Forest")
+  eval_xgb <- evaluate_model(fit_xgb, "XGBoost")
+  
+  all_auc <- bind_rows(eval_log$auc, eval_rf$auc, eval_xgb$auc)
+  roc_all <- bind_rows(eval_log$roc, eval_rf$roc, eval_xgb$roc)
+  
+  if (parallel) {
+    stopCluster(cl)
+    registerDoSEQ()
+  }
+  
+  roc_plot <- ggplot(roc_all, aes(x = 1 - specificity, y = sensitivity, color = model)) +
+    geom_line(linewidth = 1.2) +
+    geom_abline(lty = 2, color = "gray50") +
+    labs(title = "ROC Curves", x = "1 - Specificity", y = "Sensitivity") +
+    theme_minimal()
+  
+  vip_rf <- vip(fit_rf$fit$fit, num_features = 10, geom = "col", aesthetics = list(fill = "steelblue")) +
+    labs(title = "Random Forest Feature Importance") +
+    theme_minimal()
+  
+  vip_xgb <- vip(fit_xgb$fit$fit, num_features = 10, geom = "col", aesthetics = list(fill = "darkgreen")) +
+    labs(title = "XGBoost Feature Importance") +
+    theme_minimal()
+  
+  list(
+    fits = list(logistic = fit_log, random_forest = fit_rf, xgboost = fit_xgb),
+    evaluations = list(logistic = eval_log, random_forest = eval_rf, xgboost = eval_xgb),
+    auc_summary = all_auc,
+    roc_plot = roc_plot,
+    feature_importance_plots = list(random_forest = vip_rf, xgboost = vip_xgb)
+  )
+}
+run_clustering_analysis <- function(data, features = c("Flight_Duration", "Day_of_Week"), max_k = 10, seed = 123) {
+  set.seed(seed)
+  cluster_data <- data %>% select(all_of(features)) %>% drop_na()
+  cluster_scaled <- cluster_data %>% mutate(across(everything(), scale))
+  wss <- map_dbl(1:max_k, function(k) kmeans(cluster_scaled, centers = k, nstart = 25)$tot.withinss)
+  wss_diff <- diff(wss)
+  wss_accel <- diff(wss_diff)
+  k_opt <- which.min(wss_accel) + 2
+  elbow_plot <- tibble(k = 1:max_k, wss = wss) %>%
+    ggplot(aes(x = k, y = wss)) +
+    geom_line() +
+    geom_point() +
+    labs(title = "Elbow Method for Optimal K", x = "Number of Clusters", y = "Total Within Sum of Squares") +
+    theme_minimal()
+  kmeans_result <- kmeans(cluster_scaled, centers = k_opt, nstart = 25)
+  cluster_data$cluster <- as.factor(kmeans_result$cluster)
+  cluster_plot <- ggplot(cluster_data, aes(x = Flight_Duration, y = Day_of_Week, color = cluster)) +
+    geom_point(size = 3, alpha = 0.7) +
+    labs(title = paste("K-Means Clustering (k =", k_opt, ")")) +
+    theme_minimal()
+  list(
+    elbow_plot = elbow_plot,
+    cluster_plot = cluster_plot,
+    cluster_assignments = cluster_data
+  )
+}
+
+my_data <- read.csv("flights_200.csv")
+
+classification_results <- run_classification_pipeline(
+  data = my_data,
+  target = "Delayed",
+  positive_class = "1",
+  smote = TRUE,
+  seed = 123,
+  parallel = TRUE
+)
+
+clustering_results <- run_clustering_analysis(my_data)
+
+print(classification_results$roc_plot)
+print(classification_results$feature_importance_plots$random_forest)
+print(classification_results$feature_importance_plots$xgboost)
+print(clustering_results$elbow_plot)
+print(clustering_results$cluster_plot)
+
+logistic_model <- classification_results$fits$logistic
+
+preds_logistic <- predict(logistic_model, my_data, type = "prob") %>%
+  bind_cols(predict(logistic_model, my_data)) %>%
+  bind_cols(my_data)
+
+sample_data <- tibble(
+  Flight_Duration = c(85, 180, 145, 220, 110),
+  Day_of_Week = c(1, 3, 5, 7, 2),
+  Weather_Conditions = c("Clear", "Rain", "Fog", "Storm", "Snow")
+)
+
+sample_preds <- predict(logistic_model, sample_data, type = "prob") %>%
+  bind_cols(predict(logistic_model, sample_data)) %>%
+  bind_cols(sample_data)
+
+print(sample_preds)
