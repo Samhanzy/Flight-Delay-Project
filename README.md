@@ -1,4 +1,4 @@
-![Flight Delay Preview](https://i.imgur.com/abc123.png)
+![Project Preview](./kmeans_clusters.png)
 # ✈️ Flight Delay Analysis: Classification & Clustering
 ![R Version](https://img.shields.io/badge/R-≥4.0-blue)
 ![License](https://img.shields.io/github/license/Samhanzy/Flight-Delay-Project)
