@@ -59,8 +59,8 @@ Using features like flight duration, day of week, and weather conditions, three 
 
 ## 🗃️ Dataset
 
-- **File:** `flights_200.csv`
-- **Size:** 200 flight records × 7 features
+- **File:** `flights.csv`
+- **Size:** 50000 flight records × 7 features
 - **Source:** US Bureau of Transportation Statistics via Kaggle (2015 Flight Delays dataset)
 - **Features:** `Flight_Duration`, `Day_of_Week`, `Weather_Conditions`, `Airline`, `Scheduled_Departure`, `Delay_Status`
 
@@ -90,8 +90,8 @@ Using features like flight duration, day of week, and weather conditions, three 
 install.packages(c("tidymodels", "tidyverse", "xgboost", "ranger", "themis", "vip", "doParallel"))
 
 # Run the analysis
-# 1. Place flights_200.csv in your working directory
-# 2. Open and run R/analysis.R
+# 1. Place flights.csv in your working directory
+# 2. Open and run R/Classification Pipeline and Clustering.R
 # 3. Outputs: ROC curves, feature importance plots, clustering visualizations
 ```
 
@@ -103,7 +103,7 @@ install.packages(c("tidymodels", "tidyverse", "xgboost", "ranger", "themis", "vi
 Flight-Delay-Project/
 │
 ├── R/
-│   └── analysis.R              # Main modelling script
+│   └── Classification Pipeline and Clustering.R              # Main modelling script
 │
 ├── figures/
 │   ├── roc_curve.png
